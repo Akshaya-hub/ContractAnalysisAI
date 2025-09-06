@@ -10,6 +10,8 @@ class AnalyzeReq(BaseModel):
     profile: str = "standard_v1"
     jurisdiction: str | None = None
 
+
+
 @app.post("/jobs/analyze")
 async def analyze(req: AnalyzeReq):
     job_id = str(uuid.uuid4())
