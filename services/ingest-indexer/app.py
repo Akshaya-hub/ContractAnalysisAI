@@ -9,7 +9,7 @@ class IngestReq(BaseModel):
     tenant_id: str
     profile: str | None = None
     jurisdiction: str | None = None
-
+#  metadata can include type, parties, date, etc.
 @app.post("/ingest")
 async def ingest(req: IngestReq):
     # TODO: parse PDF/DOCX, chunk, embed, index
@@ -19,7 +19,7 @@ async def ingest(req: IngestReq):
         "tenant_id": req.tenant_id,
         "chunks": [
             {"page": 1, "text": "Termination: Either party may terminate with 5 days notice."},
-            {"page": 2, "text": "Governing Law: State X."}
+            {"page": 2, "text": "Governing6 Law: State X."}
         ],
         "metadata": {"type": "NDA", "parties": ["A", "B"], "date": "2024-01-02"}
     }
