@@ -28,7 +28,7 @@ HTML_TMPL = """
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Contract Analysis Report - {{ meta.document_id }}</title>
+  <title>Contract Analysis Report - {{ meta["document_id"] }}</title>
   <style>
     body { font-family: system-ui, Segoe UI, Arial, sans-serif; margin: 24px; }
     h1 { margin-bottom: 4px; }
@@ -48,7 +48,7 @@ HTML_TMPL = """
 <body>
   <h1>Contract Analysis Report</h1>
   <div class="muted">
-    Document ID: <b>{{ meta.document_id }}</b> · Tenant: <b>{{ meta.tenant_id }}</b> · Generated: {{ now }}
+    Document ID: <b>{{ meta["document_id"] }}</b> · Tenant: <b>{{ meta["tenant_id"] }}</b> · Generated: {{ now }}
   </div>
 
   <h2>Executive Summary</h2>
@@ -59,9 +59,9 @@ HTML_TMPL = """
     <tr><th>Type</th><th>Page</th><th>Summary</th></tr>
     {% for c in clauses %}
       <tr>
-        <td>{{ c.type }}</td>
-        <td>{{ c.span.page if c.span and c.span.page is not none else "-" }}</td>
-        <td>{{ c.summary or (c.text[:180] ~ ("…" if c.text|length > 180 else "")) }}</td>
+        <td>{{ c["type"] }}</td>
+        <td>{{ c["span"]["page"] if c.get("span") and c["span"].get("page") else "-" }}</td>
+        <td>{{ c.get("summary") or (c.get("text","")[:180] ~ ("…" if c.get("text")|length > 180 else "")) }}</td>
       </tr>
     {% endfor %}
   </table>
@@ -71,11 +71,11 @@ HTML_TMPL = """
     <tr><th>Clause</th><th>Severity</th><th>Score</th><th>Issue</th><th>Evidence</th></tr>
     {% for r in risks %}
       <tr>
-        <td>{{ r.clause_type }}</td>
-        <td><span class="badge sev-{{ r.severity }}">{{ r.severity }}</span></td>
-        <td>{{ "%.1f"|format(r.score or 0) }}</td>
-        <td>{{ r.issue }}</td>
-        <td class="code">{{ (r.evidence_spans or []) | tojson }}</td>
+        <td>{{ r["clause_type"] }}</td>
+        <td><span class="badge sev-{{ r["severity"] }}">{{ r["severity"] }}</span></td>
+        <td>{{ "%.1f"|format(r.get("score", 0)) }}</td>
+        <td>{{ r["issue"] }}</td>
+        <td class="code">{{ (r.get("evidence_spans") or []) | tojson }}</td>
       </tr>
     {% endfor %}
   </table>
@@ -85,11 +85,11 @@ HTML_TMPL = """
     <tr><th>Target Clause</th><th>Action</th><th>Suggested Text</th><th>Priority</th><th>Citations</th></tr>
     {% for rec in recommendations %}
       <tr>
-        <td>{{ rec.target_clause }}</td>
-        <td>{{ rec.action }}</td>
-        <td class="code">{{ rec.suggested_text }}</td>
-        <td>{{ rec.priority }}</td>
-        <td class="code">{{ (rec.citations or []) | tojson }}</td>
+        <td>{{ rec["target_clause"] }}</td>
+        <td>{{ rec["action"] }}</td>
+        <td class="code">{{ rec["suggested_text"] }}</td>
+        <td>{{ rec["priority"] }}</td>
+        <td class="code">{{ (rec.get("citations") or []) | tojson }}</td>
       </tr>
     {% endfor %}
   </table>
@@ -102,6 +102,7 @@ HTML_TMPL = """
 </body>
 </html>
 """
+
 
 def render_html(payload: Dict[str, Any]) -> bytes:
     env = Environment(
@@ -170,7 +171,7 @@ def render(req: ReportReq):
         return {"url": url}
 
     # Fallback: write to local file and return a file URL
-    out_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "storage", "reports"))
+    out_dir = os.path.abspath(os.path.join(os.path.dirname(_file_), "..", "..", "storage", "reports"))
     os.makedirs(out_dir, exist_ok=True)
     fname = f"{req.meta.get('document_id','unknown')}.html"
     fpath = os.path.join(out_dir, fname)

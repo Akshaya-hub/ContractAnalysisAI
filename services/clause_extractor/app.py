@@ -1,13 +1,16 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any
 
 app = FastAPI()
 
+# In-memory mock storage
+CLAUSE_STORE: Dict[str, List[Dict[str, Any]]] = {}
+
 class Ingested(BaseModel):
     document_id: str
     tenant_id: str
-    chunks: List[Dict,]
+    chunks: List[Dict[str, Any]]  # corrected type
 
 @app.post("/extract")
 async def extract(req: Ingested):
@@ -32,3 +35,14 @@ async def extract(req: Ingested):
             }
         ]
     }
+
+@app.get("/clauses/{doc_id}")
+def get_clauses(doc_id: str):
+    if doc_id not in CLAUSE_STORE:
+        # Mock some data if not already stored
+        CLAUSE_STORE[doc_id] = [
+            {"id": 1, "text": "Payment within 30 days."},
+            {"id": 2, "text": "Termination anytime."},
+            {"id": 3, "text": "Confidentiality clause."},
+        ]
+    return CLAUSE_STORE[doc_id]
