@@ -23,3 +23,4 @@ async def ingest(req: IngestReq):
         ],
         "metadata": {"type": "NDA", "parties": ["A", "B"], "date": "2024-01-02"}
     }
+

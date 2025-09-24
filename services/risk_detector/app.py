@@ -1,12 +1,14 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List, Dict, Any
+from fastapi import FastAPI, HTTPException
 
-app = FastAPI()
-
+app = FastAPI(title="Risk Detector Service")
 class Clauses(BaseModel):
     document_id: str
     clauses: List[Dict[str, Any]]
+
+RISK_STORE = {}
 
 @app.post("/detect")
 async def detect(req: Clauses):
@@ -36,3 +38,15 @@ async def detect(req: Clauses):
             "confidence": 0.8
         })
     return {"document_id": req.document_id, "risks": risks}
+
+
+@app.get("/risks/{doc_id}")
+def get_risks(doc_id: str):
+    if doc_id not in RISK_STORE:
+        # mock risks
+        RISK_STORE[doc_id] = [
+            {"clause_id": 1, "level": "low"},
+            {"clause_id": 2, "level": "high"},
+            {"clause_id": 3, "level": "medium"},
+        ]
+    return RISK_STORE[doc_id]
