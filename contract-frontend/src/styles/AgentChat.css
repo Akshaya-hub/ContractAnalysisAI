@@ -1,0 +1,45 @@
+.agent-chat {
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 15px;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-box {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 10px;
+  }
+  .chat-msg {
+    margin: 5px 0;
+    padding: 8px 12px;
+    border-radius: 12px;
+    max-width: 80%;
+  }
+  .chat-msg.user {
+    background: #e0f7fa;
+    align-self: flex-end;
+  }
+  .chat-msg.agent {
+    background: #ede7f6;
+    align-self: flex-start;
+  }
+  .chat-input {
+    display: flex;
+  }
+  .chat-input input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+  .chat-input button {
+    margin-left: 8px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    background: #6c63ff;
+    color: white;
+  }
+  

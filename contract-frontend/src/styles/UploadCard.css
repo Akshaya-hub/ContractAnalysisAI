@@ -1,0 +1,51 @@
+.upload-card {
+    width: 100%;
+    max-width: 500px;
+    min-height: 200px;
+    margin: 50px auto;
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .upload-card.dragging {
+    border-color: #4e9fff;
+    background: rgba(78, 159, 255, 0.2);
+  }
+  
+  .upload-label {
+    display: block;
+    font-size: 16px;
+    color: #222;
+    cursor: pointer;
+    padding: 20px;
+  }
+  
+  .upload-btn {
+    margin-top: 20px;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #4e9fff, #6c63ff);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  .upload-btn:hover {
+    transform: scale(1.05);
+  }
+  
+  .error-text {
+    color: red;
+    margin-top: 10px;
+  }
+  

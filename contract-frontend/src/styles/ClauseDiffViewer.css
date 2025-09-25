@@ -1,0 +1,50 @@
+.diff-container {
+    margin: 20px 0;
+  }
+  
+  .diff-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: #fff;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+  }
+  
+  .diff-side {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+  }
+  
+  .original {
+    background: #fbe9e7;
+    margin-bottom: 10px;
+  }
+  
+  .suggested {
+    background: #e8f5e9;
+  }
+  
+  .diff-meta {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .diff-change {
+    display: inline-block;
+    background: #e3f2fd;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-family: monospace;
+    margin-bottom: 6px;
+  }
+  
+  .diff-why {
+    margin-top: 5px;
+    color: #333;
+  }
+  
