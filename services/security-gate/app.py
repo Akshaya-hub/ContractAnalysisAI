@@ -10,6 +10,8 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Query
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
+from app_platform.common.models import SecurityScanReport
+
 # python-magic is optional on Windows; we work without it.
 try:
     import magic  # type: ignore
@@ -22,12 +24,10 @@ import sys
 
 BUILD_TAG = "sgate-2025-09-26b"
 
-# ---- Make shared models importable (avoid stdlib 'platform' clash)
-ROOT = Path(_file_).resolve().parents[2]  # .../ContractAnalysisAI
+# ---- Make shared models importable (avoid stdlib 'app_platform' clash)
+ROOT = Path(__file__).resolve().parents[2]  # .../ContractAnalysisAI
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-
-from app_platform.common.models import SecurityScanReport  # noqa: E402
 
 load_dotenv()
 
