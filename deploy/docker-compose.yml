@@ -17,7 +17,7 @@ services:
       - DISABLE_SECURITY_PLUGIN=true
       - bootstrap.memory_lock=true
       - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
-    ports: ["9200:9200"]
+    ports: ["9400:9200"]
 
   minio:
     image: minio/minio
