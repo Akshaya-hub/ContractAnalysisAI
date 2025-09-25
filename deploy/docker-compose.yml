@@ -1,4 +1,5 @@
 version: "3.9"
+
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -41,6 +42,49 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=admin
     ports: ["8081:8081"]
 
+  security-gate:
+    build:
+      context: ../services/security-gate
+    command: uvicorn app:app --host 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+    environment:
+      UPLOAD_DIR: /data/uploads
+      MAX_UPLOAD_MB: "15"
+      SERVICE_SECRET: ${SERVICE_SECRET:-dev-secret}
+    volumes:
+      - security_gate_data:/data
+    restart: unless-stopped
+
+  mock-pipeline:
+    build:
+      context: ../services/mock-pipeline
+    command: uvicorn app:app --host 0.0.0.0 --port 9000
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+
+  orchestrator:
+    build:
+      context: ../services/orchestrator
+    command: uvicorn app:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      # inside the compose network, refer to services by name
+      SECURITY_GATE_URL: http://security-gate:8001
+      SECURITY_SECRET: ${SERVICE_SECRET:-dev-secret}
+      INGEST_URL:  http://mock-pipeline:9000/ingest
+      EXTRACT_URL: http://mock-pipeline:9000/extract
+      RISK_URL:    http://mock-pipeline:9000/detect
+      RECO_URL:    http://mock-pipeline:9000/recommend
+      RENDER_URL:  http://mock-pipeline:9000/render
+    depends_on:
+      - security-gate
+      - mock-pipeline
+    restart: unless-stopped
+
 volumes:
   pgdata:
   minio:
+  security_gate_data:
