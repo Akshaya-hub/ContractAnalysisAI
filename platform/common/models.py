@@ -31,3 +31,14 @@ class Recommendation(BaseModel):
     priority: str
     citations: List[Dict[str, str]] = []
     diff: Optional[str] = None
+
+class SecurityScanReport(BaseModel):
+    file_id: str
+    sha256: str
+    size_bytes: int
+    is_pdf: bool
+    is_encrypted: bool
+    pages: int
+    removed: Dict[str, int]   # counts/flags of removed items
+    notes: Optional[str] = None
+    sanitized_path: str       # local path or object key for next step
