@@ -1,26 +1,66 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import Dict, Any
+import os
+from pathlib import Path
+from PyPDF2 import PdfReader
 
-app = FastAPI()
+app = FastAPI(title="Ingest Indexer Service")
 
-class IngestReq(BaseModel):
+# --------- Request Model ----------
+class IngestRequest(BaseModel):
     document_id: str
     tenant_id: str
-    profile: str | None = None
-    jurisdiction: str | None = None
 
-@app.post("/ingest")
-async def ingest(req: IngestReq):
-    # TODO: parse PDF/DOCX, chunk, embed, index
-    # For demo, return a tiny mock "doc" with two clauses worth of text.
-    return {
-        "document_id": req.document_id,
-        "tenant_id": req.tenant_id,
-        "chunks": [
-            {"page": 1, "text": "Termination: Either party may terminate with 5 days notice."},
-            {"page": 2, "text": "Governing Law: State X."}
-        ],
-        "metadata": {"type": "NDA", "parties": ["A", "B"], "date": "2024-01-02"}
-    }
+# --------- Response Models ----------
+class Chunk(BaseModel):
+    page: int
+    text: str
 
+class Metadata(BaseModel):
+    type: str = "Contract"
+    parties: list[str] = []
+    date: str | None = None
+
+class IngestResponse(BaseModel):
+    document_id: str
+    tenant_id: str
+    chunks: list[Chunk]
+    metadata: Metadata
+
+# --------- Ingest Endpoint ----------
+@app.post("/ingest", response_model=IngestResponse)
+def ingest_document(req: IngestRequest):
+    uploads_dir = Path(__file__).resolve().parents[2] / "storage" / "uploads"
+    pdf_path = uploads_dir / f"{req.document_id}.pdf"
+
+    if not pdf_path.exists():
+        raise HTTPException(status_code=404, detail=f"File not found: {pdf_path}")
+
+    try:
+        reader = PdfReader(str(pdf_path))
+        chunks = []
+        for i, page in enumerate(reader.pages, start=1):
+            text = page.extract_text() or ""
+            chunks.append({"page": i, "text": text.strip()})
+
+        # Simple mock metadata
+        metadata = {
+            "type": "NDA",
+            "parties": ["Party A", "Party B"],
+            "date": "2025-01-01"
+        }
+
+        return {
+            "document_id": req.document_id,
+            "tenant_id": req.tenant_id,
+            "chunks": chunks,
+            "metadata": metadata
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ingest failed: {str(e)}")
+
+# --------- Health Check ----------
+@app.get("/health")
+def health():
+    return {"status": "ok"}

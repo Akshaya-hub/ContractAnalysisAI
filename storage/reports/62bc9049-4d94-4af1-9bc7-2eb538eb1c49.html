@@ -1,0 +1,190 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Contract Analysis Report - 62bc9049-4d94-4af1-9bc7-2eb538eb1c49</title>
+  <style>
+    body { font-family: system-ui, Segoe UI, Arial, sans-serif; margin: 24px; }
+    h1 { margin-bottom: 4px; }
+    h2 { border-bottom: 1px solid #eee; padding-bottom: 4px; margin-top: 28px; }
+    .muted { color: #666; font-size: 0.9em; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+    th { background: #f8f8f8; text-align: left; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; background: #eef; }
+    .sev-High { background: #ffe0e0; }
+    .sev-Critical { background: #ffd6cc; }
+    .sev-Medium { background: #fff2cc; }
+    .sev-Low { background: #e7f7e7; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Contract Analysis Report</h1>
+  <div class="muted">
+    Document ID: <b>62bc9049-4d94-4af1-9bc7-2eb538eb1c49</b> · Tenant: <b>demo</b> · Generated: 2025-09-05 09:45 UTC
+  </div>
+
+  <h2>Executive Summary</h2>
+  <p>Total Clauses: <b>2</b> · Risks: <b>2</b> · Recommendations: <b>2</b></p>
+
+  <h2>Clauses</h2>
+  <table>
+    <tr><th>Type</th><th>Page</th><th>Summary</th></tr>
+    
+      <tr>
+        <td>Termination</td>
+        <td>1</td>
+        <td>Termination for convenience with 5 days&#39; notice.</td>
+      </tr>
+    
+      <tr>
+        <td>Governing Law</td>
+        <td>2</td>
+        <td>Governing law is State X.</td>
+      </tr>
+    
+  </table>
+
+  <h2>Risks</h2>
+  <table>
+    <tr><th>Clause</th><th>Severity</th><th>Score</th><th>Issue</th><th>Evidence</th></tr>
+    
+      <tr>
+        <td>Termination</td>
+        <td><span class="badge sev-High">High</span></td>
+        <td>7.5</td>
+        <td>Short termination notice (5 days).</td>
+        <td class="code">[{"end": 66, "page": 1, "start": 0}]</td>
+      </tr>
+    
+      <tr>
+        <td>Indemnity</td>
+        <td><span class="badge sev-Critical">Critical</span></td>
+        <td>8.5</td>
+        <td>No indemnity clause found.</td>
+        <td class="code">[]</td>
+      </tr>
+    
+  </table>
+
+  <h2>Recommendations</h2>
+  <table>
+    <tr><th>Target Clause</th><th>Action</th><th>Suggested Text</th><th>Priority</th><th>Citations</th></tr>
+    
+      <tr>
+        <td>Termination</td>
+        <td>Replace</td>
+        <td class="code">Either party may terminate for convenience with at least 30 days’ prior written notice.</td>
+        <td>P0</td>
+        <td class="code">[{"section": "Termination/Notice", "source": "PolicyKB:v1"}]</td>
+      </tr>
+    
+      <tr>
+        <td>Indemnity</td>
+        <td>Add</td>
+        <td class="code">Each party shall indemnify and hold harmless the other from third-party claims, subject to liability caps.</td>
+        <td>P0</td>
+        <td class="code">[{"section": "Indemnity/Standard", "source": "PolicyKB:v1"}]</td>
+      </tr>
+    
+  </table>
+
+  <h2>Raw Data (debug)</h2>
+  <details>
+    <summary>Show JSON</summary>
+    <pre class="code">{
+  &#34;meta&#34;: {
+    &#34;document_id&#34;: &#34;62bc9049-4d94-4af1-9bc7-2eb538eb1c49&#34;,
+    &#34;tenant_id&#34;: &#34;demo&#34;
+  },
+  &#34;clauses&#34;: [
+    {
+      &#34;type&#34;: &#34;Termination&#34;,
+      &#34;span&#34;: {
+        &#34;page&#34;: 1,
+        &#34;start&#34;: 0,
+        &#34;end&#34;: 66
+      },
+      &#34;text&#34;: &#34;Either party may terminate with 5 days notice.&#34;,
+      &#34;key_fields&#34;: {
+        &#34;notice_period_days&#34;: 5,
+        &#34;for_convenience&#34;: true
+      },
+      &#34;summary&#34;: &#34;Termination for convenience with 5 days&#39; notice.&#34;,
+      &#34;confidence&#34;: 0.9
+    },
+    {
+      &#34;type&#34;: &#34;Governing Law&#34;,
+      &#34;span&#34;: {
+        &#34;page&#34;: 2,
+        &#34;start&#34;: 0,
+        &#34;end&#34;: 23
+      },
+      &#34;text&#34;: &#34;State X.&#34;,
+      &#34;key_fields&#34;: {},
+      &#34;summary&#34;: &#34;Governing law is State X.&#34;,
+      &#34;confidence&#34;: 0.88
+    }
+  ],
+  &#34;risks&#34;: [
+    {
+      &#34;clause_type&#34;: &#34;Termination&#34;,
+      &#34;severity&#34;: &#34;High&#34;,
+      &#34;likelihood&#34;: &#34;Medium&#34;,
+      &#34;score&#34;: 7.5,
+      &#34;issue&#34;: &#34;Short termination notice (5 days).&#34;,
+      &#34;evidence_spans&#34;: [
+        {
+          &#34;page&#34;: 1,
+          &#34;start&#34;: 0,
+          &#34;end&#34;: 66
+        }
+      ],
+      &#34;rationale&#34;: &#34;Policy requires &gt;=30 days.&#34;,
+      &#34;confidence&#34;: 0.85
+    },
+    {
+      &#34;clause_type&#34;: &#34;Indemnity&#34;,
+      &#34;severity&#34;: &#34;Critical&#34;,
+      &#34;likelihood&#34;: &#34;Medium&#34;,
+      &#34;score&#34;: 8.5,
+      &#34;issue&#34;: &#34;No indemnity clause found.&#34;,
+      &#34;evidence_spans&#34;: [],
+      &#34;rationale&#34;: &#34;Standard mutual indemnity missing.&#34;,
+      &#34;confidence&#34;: 0.8
+    }
+  ],
+  &#34;recommendations&#34;: [
+    {
+      &#34;target_clause&#34;: &#34;Termination&#34;,
+      &#34;action&#34;: &#34;Replace&#34;,
+      &#34;suggested_text&#34;: &#34;Either party may terminate for convenience with at least 30 days\u2019 prior written notice.&#34;,
+      &#34;priority&#34;: &#34;P0&#34;,
+      &#34;citations&#34;: [
+        {
+          &#34;source&#34;: &#34;PolicyKB:v1&#34;,
+          &#34;section&#34;: &#34;Termination/Notice&#34;
+        }
+      ],
+      &#34;diff&#34;: &#34;++ set notice &gt;= 30 days&#34;
+    },
+    {
+      &#34;target_clause&#34;: &#34;Indemnity&#34;,
+      &#34;action&#34;: &#34;Add&#34;,
+      &#34;suggested_text&#34;: &#34;Each party shall indemnify and hold harmless the other from third-party claims, subject to liability caps.&#34;,
+      &#34;priority&#34;: &#34;P0&#34;,
+      &#34;citations&#34;: [
+        {
+          &#34;source&#34;: &#34;PolicyKB:v1&#34;,
+          &#34;section&#34;: &#34;Indemnity/Standard&#34;
+        }
+      ],
+      &#34;diff&#34;: &#34;++ add mutual indemnity with caps&#34;
+    }
+  ]
+}</pre>
+  </details>
+</body>
+</html>

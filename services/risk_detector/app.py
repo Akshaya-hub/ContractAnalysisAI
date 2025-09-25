@@ -38,15 +38,3 @@ async def detect(req: Clauses):
             "confidence": 0.8
         })
     return {"document_id": req.document_id, "risks": risks}
-
-
-@app.get("/risks/{doc_id}")
-def get_risks(doc_id: str):
-    if doc_id not in RISK_STORE:
-        # mock risks
-        RISK_STORE[doc_id] = [
-            {"clause_id": 1, "level": "low"},
-            {"clause_id": 2, "level": "high"},
-            {"clause_id": 3, "level": "medium"},
-        ]
-    return RISK_STORE[doc_id]

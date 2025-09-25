@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import httpx, uuid
 
 app = FastAPI(title="Orchestrator Service")
+app = FastAPI(title="Orchestrator Service")
 
 class AnalyzeReq(BaseModel):
     document_id: str
