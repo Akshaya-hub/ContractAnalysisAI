@@ -367,6 +367,7 @@ async def scan_upload(
     # remove original
     try:
         os.remove(src_path)
+
     except Exception:
         pass
 

@@ -1,8 +1,9 @@
+# services/mock-pipeline/app.py
 from fastapi import FastAPI
 from pydantic import BaseModel
 import uuid
 
-app = FastAPI(title="Mock Pipeline", version="0.0.1")
+app = FastAPI(title="Mock Pipeline")
 
 class BaseIn(BaseModel):
     document_id: str | None = None
@@ -12,28 +13,45 @@ class BaseIn(BaseModel):
     sanitized_path: str | None = None
     filename: str | None = None
 
+@app.get("/health")
+def health():
+    return {"ok": True, "service": "mock-pipeline"}
+
 @app.post("/ingest")
 def ingest(payload: BaseIn):
     return {
-        "ingested": True,
         "document_id": payload.document_id or str(uuid.uuid4()),
-        "chunks": 10,
-        "info": {"filename": payload.filename, "sanitized_path": payload.sanitized_path}
+        "chunks": 3,
+        "info": {"filename": payload.filename, "tenant_id": payload.tenant_id}
     }
 
 @app.post("/extract")
-def extract(prev: dict):
-    return {"clauses": ["Confidentiality", "Term", "Termination", "Governing Law"]}
+def extract(payload: dict):
+    # pretend clause extraction
+    return {"clauses": [{"type":"termination","text":"…","confidence":0.92}]}
 
 @app.post("/detect")
-def detect(prev: dict):
-    return {"risks": [{"clause": "Termination", "level": "High", "reason": "5 days notice"}]}
+def detect(payload: dict):
+    # pretend risk detection
+    return {"risks": [{"type":"high-liability","score":0.77}]}
 
 @app.post("/recommend")
-def recommend(prev: dict):
-    return {"recommendations": [{"clause": "Termination", "suggest": "30 days notice"}]}
+def recommend(payload: dict):
+    # pretend recommendations
+    return {"recommendations": [{"action":"add indemnity cap","reason":"…"}]}
 
 @app.post("/render")
-def render(prev: dict):
-    # pretend a report was generated
-    return {"url": "http://localhost:9000/demo-report.pdf"}
+def render(payload: dict):
+    # pretend report rendering
+    return {"url": "http://127.0.0.1:9000/mock-report.pdf"}
+
+from fastapi.responses import RedirectResponse, Response
+from pathlib import Path
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse("/docs")
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return Response(status_code=204)
