@@ -4,132 +4,105 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from PyPDF2 import PdfReader
-# -----------------------------
-# Config
-# -----------------------------
-UPLOADS_DIR = Path(__file__).parent.parent / "uploads"
-UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
-INDEX_PATH = Path(__file__).parent.parent / "storage" / "uploads_index.json"
-INDEX_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-enc = tiktoken.get_encoding("cl100k_base")
+# ---------- Setup ----------
+app = FastAPI(title="Ingest Indexer Service", version="1.2.0")
 
-app = FastAPI(title="PDF Ingestor")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
-# -----------------------------
-# Models
-# -----------------------------
-class IngestReq(BaseModel):
+# ---------- Config ----------
+# Shared upload directory (same as orchestrator’s)
+UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", r"C:\Users\shana\OneDrive\Desktop\ContractAnalysisAI\_uploads")).resolve()
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+logging.info(f"Using UPLOAD_DIR: {UPLOAD_DIR}")
+
+# ---------- Models ----------
+class IngestRequest(BaseModel):
     document_id: str
     tenant_id: str
-    profile: str | None = None
-    jurisdiction: str | None = None
+    sanitized_path: str | None = None
 
-# -----------------------------
-# Helpers
-# -----------------------------
-def read_index() -> Dict[str, str]:
-    if not INDEX_PATH.exists():
-        return {}
-    try:
-        return json.loads(INDEX_PATH.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
+class Chunk(BaseModel):
+    page: int
+    text: str
 
-def write_index(idx: Dict[str, str]):
-    INDEX_PATH.write_text(json.dumps(idx, indent=2), encoding="utf-8")
+class Metadata(BaseModel):
+    type: str = "Contract"
+    parties: list[str] = []
+    date: str | None = None
 
-# -----------------------------
-# Memory-safe token chunks
-# -----------------------------
-def token_chunks(text: str, max_tokens=900, overlap=120):
-    toks = enc.encode(text)
-    i = 0
-    while i < len(toks):
-        j = min(i + max_tokens, len(toks))
-        yield enc.decode(toks[i:j])
-        i = j - overlap
-        if i < 0:
-            i = 0
+class IngestResponse(BaseModel):
+    document_id: str
+    tenant_id: str
+    chunks: list[Chunk]
+    metadata: Metadata
 
-# -----------------------------
-# Memory-safe PDF extraction (generator)
-# -----------------------------
-def extract_pdf_text(path: Path):
-    """Yield PDF chunks one by one"""
-    with pdfplumber.open(path) as pdf:
-        for page_no, page in enumerate(pdf.pages, start=1):
-            txt = page.extract_text() or ""
-            txt = re.sub(r"[ \t]+", " ", txt).strip()
-            if not txt:
-                continue
-            for segment in token_chunks(txt):
-                yield {"page": page_no, "text": segment}
+# ---------- Endpoint ----------
+@app.post("/ingest", response_model=IngestResponse)
+def ingest_document(req: IngestRequest):
+    logging.info(f"Received ingest request for {req.document_id}")
+    logging.info(f"Sanitized path provided: {req.sanitized_path}")
 
-# -----------------------------
-# Metadata extraction
-# -----------------------------
-def simple_metadata(text0: str) -> Dict[str, Any]:
-    parties = re.findall(r"\bbetween\b\s+(.+?)\s+and\s+(.+?)\b", text0, flags=re.IGNORECASE)
-    date = re.search(r"\b(20\d{2}|19\d{2})\b", text0)
-    return {
-        "type": "Unknown",
-        "parties": list(parties[0]) if parties else [],
-        "date": date.group(0) if date else None
-    }
-
-# -----------------------------
-# Endpoints
-# -----------------------------
-@app.post("/sanitize")
-async def sanitize(file: UploadFile = File(...), document_id: str = File(...)):
-    if not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(400, "Only PDF files are supported.")
-
-    dest_path = UPLOADS_DIR / file.filename
-    with open(dest_path, "wb") as f:
-        content = await file.read()
-        f.write(content)
-
-    # update index
-    idx = read_index()
-    idx[document_id] = str(dest_path.resolve())
-    write_index(idx)
-
-    return {"message": f"{file.filename} uploaded successfully.", "path": str(dest_path.resolve())}
-
-@app.post("/ingest")
-async def ingest(req: IngestReq):
-    idx = read_index()
-    path_str = idx.get(req.document_id)
-    if not path_str or not os.path.exists(path_str):
-        raise HTTPException(404, f"File for document_id {req.document_id} not found. Upload via /sanitize first.")
-
-    path = Path(path_str)
-    if path.suffix.lower() != ".pdf":
-        raise HTTPException(400, "Only PDF supported in this demo.")
-
-    chunk_gen = extract_pdf_text(path)
-
-    chunks = []
-    first_text = ""
-    for i, c in enumerate(chunk_gen):
-        if i == 0:
-            first_text = c["text"]
-        if i < 50:  # demo limit to avoid huge memory
-            chunks.append(c)
+    # 1️⃣ Determine file path
+    file_path = None
+    if req.sanitized_path:
+        possible_path = Path(req.sanitized_path).resolve()
+        if possible_path.exists():
+            file_path = possible_path
+            logging.info(f"Found file via sanitized_path: {file_path}")
         else:
-            break
+            logging.warning(f"Provided sanitized_path not found: {possible_path}")
 
-    meta = simple_metadata(first_text) | {"source_path": str(path.resolve())}
+    # 2️⃣ Fallback: look in UPLOAD_DIR
+    if not file_path:
+        pdf_path = UPLOAD_DIR / f"{req.document_id}_sanitized.pdf"
+        docx_path = UPLOAD_DIR / f"{req.document_id}_sanitized.docx"
+        if pdf_path.exists():
+            file_path = pdf_path
+        elif docx_path.exists():
+            file_path = docx_path
+        else:
+            raise HTTPException(
+                status_code=404,
+                detail=f"File not found. Checked:\n - {pdf_path}\n - {docx_path}\n - {req.sanitized_path}"
+            )
 
-    return {
-        "document_id": req.document_id,
-        "tenant_id": req.tenant_id,
-        "chunks": chunks,
-        "metadata": meta
-    }
+    # 3️⃣ Extract content
+    chunks = []
+    try:
+        if file_path.suffix.lower() == ".pdf":
+            reader = PdfReader(str(file_path))
+            for i, page in enumerate(reader.pages, start=1):
+                text = (page.extract_text() or "").strip()
+                if text:
+                    chunks.append({"page": i, "text": text})
+        elif file_path.suffix.lower() == ".docx":
+            import docx
+            doc = docx.Document(str(file_path))
+            full_text = "\n".join(p.text.strip() for p in doc.paragraphs if p.text.strip())
+            chunks.append({"page": 1, "text": full_text})
+        else:
+            raise HTTPException(415, f"Unsupported file format: {file_path.suffix}")
 
-@app.get("/")
-async def root():
-    return {"message": "FastAPI PDF Ingestor is running. Use /docs to test endpoints."}
+        metadata = Metadata(
+            type="NDA",
+            parties=["Party A", "Party B"],
+            date="2025-01-01"
+        )
+
+        logging.info(f"Ingest completed successfully for {file_path.name} ({len(chunks)} chunks)")
+        return IngestResponse(
+            document_id=req.document_id,
+            tenant_id=req.tenant_id,
+            chunks=chunks,
+            metadata=metadata
+        )
+
+    except Exception as e:
+        logging.exception(f"Ingest failed for {file_path}: {e}")
+        raise HTTPException(status_code=500, detail=f"Ingest failed: {e}")
+
+# ---------- Health Check ----------
+@app.get("/health")
+def health():
+    return {"ok": True, "uploads_dir": str(UPLOAD_DIR), "files": len(list(UPLOAD_DIR.glob('*')))}
