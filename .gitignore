@@ -1,0 +1,77 @@
+# ----------------
+# Python / FastAPI
+# ----------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+*.log
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+*.pytest_cache
+
+# MLflow / DVC (if used)
+mlruns/
+.dvc/
+.dvcignore
+
+# ----------------
+# Node / React
+# ----------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+.cache/
+.vite/
+*.tsbuildinfo
+
+# ----------------
+# Environment / Secrets
+# ----------------
+.env
+.env.local
+.env.*.local
+*.secret
+secrets.json
+
+# ----------------
+# Editor / OS
+# ----------------
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ----------------
+# Storage (contracts & reports)
+# ----------------
+storage/uploads/
+storage/reports/
+storage/uploads_index.json
+
+# ----------------
+# Docker / Compose
+# ----------------
+*.pid
+*.seed
+*.pid.lock
+docker-data/
