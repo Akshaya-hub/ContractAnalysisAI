@@ -1,8 +1,10 @@
+import os
+import logging
+from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import os
-from pathlib import Path
 from PyPDF2 import PdfReader
+
 
 app = FastAPI(title="Ingest Indexer Service")
 
