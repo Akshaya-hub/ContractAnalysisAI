@@ -1,9 +1,9 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from pydantic import BaseModel
-from typing import Dict, Any
+import os
+import logging
 from pathlib import Path
-import os, json, pdfplumber, re, tiktoken
-
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from PyPDF2 import PdfReader
 # -----------------------------
 # Config
 # -----------------------------
