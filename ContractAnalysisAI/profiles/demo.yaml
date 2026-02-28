@@ -1,0 +1,11 @@
+tenant_id: demo
+profiles:
+  Termination:
+    thresholds:
+      notice_period_days:
+        medium: 60
+        high: 30
+  Payment:
+    thresholds:
+      payment_days:
+        high: 90

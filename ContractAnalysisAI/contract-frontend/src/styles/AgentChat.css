@@ -1,0 +1,129 @@
+/* AgentChat.css - Futuristic Neon Chat Theme */
+
+.agent-chat {
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px;
+  height: 630px;
+  background: rgba(30, 41, 59, 0.6); /* glass effect */
+  border: 1px solid rgba(139, 92, 246, 0.4); /* purple border */
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);
+  backdrop-filter: blur(10px);
+}
+
+/* Chat messages area */
+.chat-box {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  font-size: 0.95rem;
+}
+
+/* Base message style */
+.chat-msg {
+  max-width: 80%;
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Agent message (left side, purple glow) */
+.chat-msg.agent {
+  align-self: flex-start;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  color: #c4b5fd; /* neon purple text */
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+}
+
+/* User message (right side, green glow) */
+.chat-msg.user {
+  align-self: flex-end;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  color: #6ee7b7; /* neon green text */
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+/* Chat input area */
+.chat-input {
+  display: flex;
+  padding: 0.8rem;
+  border-top: 1px solid rgba(139, 92, 246, 0.3);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+/* Input field */
+.chat-input input {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  border-radius: 10px;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chat-input input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
+}
+
+/* Send button */
+.chat-input button {
+  margin-left: 0.6rem;
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.chat-input button:hover:not(:disabled) {
+  background: linear-gradient(90deg, #06b6d4, #8b5cf6);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.8);
+}
+
+.chat-input button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Smooth fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scrollbar styling */
+.chat-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-box::-webkit-scrollbar-thumb {
+  background: #8b5cf6;
+  border-radius: 3px;
+}
+
+.chat-box::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}

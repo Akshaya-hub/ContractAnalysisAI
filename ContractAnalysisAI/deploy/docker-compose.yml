@@ -1,0 +1,184 @@
+version: "3.9"
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=contracts
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  opensearch:
+    image: opensearchproject/opensearch:2.13.0
+    environment:
+      - discovery.type=single-node
+      - DISABLE_SECURITY_PLUGIN=true
+      - bootstrap.memory_lock=true
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9400:9200"
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio:/data
+
+  nats:
+    image: nats:2.10
+    ports:
+      - "4222:4222"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    command: ["start-dev", "--http-port=8081"]
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    ports:
+      - "8081:8081"
+
+  ingest_indexer:
+    build:
+      context: ..
+      dockerfile: services/ingest_indexer/Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      PROJECT_ROOT: /app
+      SECURITY_GATE__STORAGE_DIR: storage/uploads
+      SECURITY_GATE__AUDIT_DIR: storage/audit
+    volumes:
+      - ../storage:/app/storage
+    ports:
+      - "8001:8001"
+    depends_on:
+      - postgres
+
+  clause_extractor:
+    build:
+      context: ..
+      dockerfile: services/clause_extractor/Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      PROJECT_ROOT: /app
+      CLAUSE_EXTRACTOR__INGEST_URL: http://security_gate:8000
+    ports:
+      - "8002:8002"
+    depends_on:
+      - ingest_indexer
+
+  risk_detector:
+    build:
+      context: ..
+      dockerfile: services/risk_detector/Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      PROJECT_ROOT: /app
+      RISK_DETECTOR__CLAUSE_URL: http://security_gate:8000
+    volumes:
+      - ../profiles:/app/profiles:ro
+    ports:
+      - "8003:8003"
+    depends_on:
+      - clause_extractor
+
+  recommender:
+    build:
+      context: ..
+      dockerfile: services/recommender/Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      PROJECT_ROOT: /app
+    ports:
+      - "8004:8004"
+
+  report_maker:
+    build:
+      context: ..
+      dockerfile: services/report_maker/Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      PROJECT_ROOT: /app
+    volumes:
+      - ../storage:/app/storage
+    ports:
+      - "8005:8005"
+    depends_on:
+      - minio
+
+  chat_agent:
+    build:
+      context: ..
+      dockerfile: services/chat_agent/Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      PROJECT_ROOT: /app
+    ports:
+      - "8007:8007"
+
+  security_gate:
+    build:
+      context: ..
+      dockerfile: services/security_gate/Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      PROJECT_ROOT: /app
+      SECURITY_GATE__INGEST_URL: http://ingest_indexer:8001
+      SECURITY_GATE__CLAUSE_URL: http://clause_extractor:8002
+      SECURITY_GATE__RISK_URL: http://risk_detector:8003
+      SECURITY_GATE__RECOMMEND_URL: http://recommender:8004
+      SECURITY_GATE__CHAT_URL: http://chat_agent:8007
+      SECURITY_GATE__STORAGE_DIR: storage/uploads
+      SECURITY_GATE__AUDIT_DIR: storage/audit
+    volumes:
+      - ../storage:/app/storage
+    ports:
+      - "8000:8000"
+    depends_on:
+      - ingest_indexer
+      - clause_extractor
+      - risk_detector
+      - recommender
+      - chat_agent
+
+  orchestrator:
+    build:
+      context: ..
+      dockerfile: services/orchestrator/Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      PROJECT_ROOT: /app
+      ORCH_SECURITY_GATE_URL: http://security_gate:8000
+      ORCH_ALLOWED_ORIGINS: http://localhost:5173
+    volumes:
+      - ../storage:/app/storage
+    ports:
+      - "8008:8008"
+    depends_on:
+      - security_gate
+      - ingest_indexer
+      - clause_extractor
+      - risk_detector
+      - recommender
+      - report_maker
+
+volumes:
+  pgdata:
+  minio:
